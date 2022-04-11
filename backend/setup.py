@@ -1,6 +1,5 @@
 import os
 from setuptools import find_packages, setup
-from setuptools.command.install import install
 
 NAME = 'stopwatch'
 VERSION = '0.0.1'
