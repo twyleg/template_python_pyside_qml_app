@@ -24,10 +24,10 @@ class Stopwatch:
         self.engine = QQmlApplicationEngine()
 
         self.engine.rootContext().setContextProperty("stopwatch_model", self.stopwatch_model)
-        self.engine.load(os.fspath(Path(__file__).resolve().parent / "../../frontend/qml/main.qml"))
+        self.engine.load(os.fspath(Path(__file__).resolve().parent / "../frontend/qml/main.qml"))
 
-        self.engine.rootObjects()[0].startStopButtonClicked.connect(self.start_stop_button_clicked)
-        self.engine.rootObjects()[0].resetButtonClicked.connect(self.reset_button_clicked)
+        self.stopwatch_model.start_stop_button_clicked.connect(self.start_stop_button_clicked)
+        self.stopwatch_model.reset_button_clicked.connect(self.reset_button_clicked)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.timer_callback)

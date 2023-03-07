@@ -15,8 +15,8 @@ Window {
 
 	color: "black"
 
-	signal startStopButtonClicked
-	signal resetButtonClicked
+//	signal startStopButtonClicked
+//	signal resetButtonClicked
 
 	Item {
 		id: dialItem

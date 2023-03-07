@@ -88,6 +88,14 @@ class Model(QObject):
     def hours_changed(self) -> None:
         pass
 
+    @Signal
+    def start_stop_button_clicked(self) -> None:
+        pass
+
+    @Signal
+    def reset_button_clicked(self) -> None:
+        pass
+
     state = Property(int, get_state, set_state, notify=state_changed)
 
     millis = Property(int, get_millis, set_millis, notify=millis_changed)

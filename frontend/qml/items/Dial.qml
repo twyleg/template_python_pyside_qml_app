@@ -105,7 +105,7 @@ Item {
 		width: parent.width * 0.38
 		height: parent.height * 0.11
 
-		onPressed: window.startStopButtonClicked()
+        onPressed: stopwatch_model.start_stop_button_clicked()
 	}
 
 	MouseArea {
@@ -119,7 +119,7 @@ Item {
 		width: parent.width * 0.13
 		height: parent.height * 0.05
 
-		onPressed: window.resetButtonClicked()
+        onPressed: stopwatch_model.reset_button_clicked()
 	}
 
 	Timer {
