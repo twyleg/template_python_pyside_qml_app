@@ -1,6 +1,4 @@
-""""
-Copyright (C) 2022 twyleg
-"""
+# Copyright (C) 2024 twyleg
 from stopwatch import Stopwatch
 
 if __name__ == "__main__":

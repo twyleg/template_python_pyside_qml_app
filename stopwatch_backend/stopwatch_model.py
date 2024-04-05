@@ -1,8 +1,9 @@
-""""
-Copyright (C) 2022 twyleg
-"""
+# Copyright (C) 2024 twyleg
+import time
 from enum import IntEnum
-from PySide6.QtCore import QObject, Signal, Property
+from PySide6.QtCore import QObject, Signal, Slot
+
+from stopwatch_backend.properties import PropertyMeta, Property
 
 
 class State(IntEnum):
@@ -11,94 +12,83 @@ class State(IntEnum):
     PAUSED = 2
 
 
-class Model(QObject):
+class Timer(QObject, metaclass=PropertyMeta):
+    state = Property(int)
+    millis = Property(int)
+    seconds = Property(int)
+    minutes = Property(int)
+    hours = Property(int)
+
     def __init__(self, millis: int, seconds: int, minutes: int, hours: int) -> None:
         QObject.__init__(self)
-        self._state = State.RESET
-        self._millis = millis
-        self._seconds = seconds
-        self._minutes = minutes
-        self._hours = hours
+        self.state = State.RESET
+        self.millis = millis
+        self.seconds = seconds
+        self.minutes = minutes
+        self.hours = hours
 
-    def set_timestamp(self, timestamp_ns: int) -> None:
-        timestamp_ms = timestamp_ns // (1000 * 1000)
+        self.count_ns = 0
+        self.last_timestamp_ns = 0
 
-        millis = timestamp_ms % 1000
-        seconds = (timestamp_ms // 1000) % 60
-        minutes = (timestamp_ms // (1000 * 60)) % 60
-        hours = (timestamp_ms // (1000 * 60 * 60))
+    @Slot()
+    def start(self) -> None:
+        self.last_timestamp_ns = time.time_ns()
+        self.state = State.RUNNING
 
-        self.set_millis(millis)
-        self.set_seconds(seconds)
-        self.set_minutes(minutes)
-        self.set_hours(hours)
+    @Slot()
+    def pause(self) -> None:
+        self.state = State.PAUSED
 
-    def get_state(self) -> State:
-        return self._state
+    @Slot()
+    def reset(self) -> None:
+        self.count_ns = 0
+        self.state = State.RESET
+        self.update()
 
-    def get_millis(self) -> int:
-        return self._millis
+    @Slot()
+    def start_stop(self) -> None:
+        state = self.state
+        if state == State.RESET:
+            self.start()
+        elif state == State.PAUSED:
+            self.start()
+        elif state == State.RUNNING:
+            self.pause()
 
-    def get_seconds(self) -> int:
-        return self._seconds
+    def update(self):
+        if self.state == State.RUNNING:
+            current_timestamp_ns = time.time_ns()
+            diff = current_timestamp_ns - self.last_timestamp_ns
+            self.count_ns += diff
+            self.last_timestamp_ns = current_timestamp_ns
 
-    def get_minutes(self) -> int:
-        return self._minutes
+        count_ms = self.count_ns // (1000 * 1000)
 
-    def get_hours(self) -> int:
-        return self._hours
+        self.millis = count_ms % 1000
+        self.seconds = (count_ms // 1000) % 60
+        self.minutes = (count_ms // (1000 * 60)) % 60
+        self.hours = (count_ms // (1000 * 60 * 60))
 
-    def set_state(self, state: int) -> None:
-        self._state = state
-        self.state_changed.emit()
 
-    def set_millis(self, millis: int) -> None:
-        self._millis = millis
-        self.millis_changed.emit()
+class Model(QObject, metaclass=PropertyMeta):
 
-    def set_seconds(self, seconds: int) -> None:
-        self._seconds = seconds
-        self.seconds_changed.emit()
+    active_timer = Property(Timer)
+    timers = Property(list)
 
-    def set_minutes(self, minutes: int) -> None:
-        self._minutes = minutes
-        self.minutes_changed.emit()
+    def __init__(self) -> None:
+        QObject.__init__(self)
+        self.active_timer = Timer(0, 0, 0, 0)
+        self.timers = []
+        self.timers.append(self.active_timer)
 
-    def set_hours(self, hours: int) -> None:
-        self._hours = hours
-        self.hours_changed.emit()
+    @Slot()
+    def add_timer(self):
+        self.timers.append(Timer(0, 0, 0, 0))
 
-    @Signal
-    def state_changed(self) -> None:
-        pass
+    @Slot(Timer)
+    def activate_timer(self, timer: Timer):
+        self.active_timer = timer
 
-    @Signal
-    def millis_changed(self) -> None:
-        pass
-
-    @Signal
-    def seconds_changed(self) -> None:
-        pass
-
-    @Signal
-    def minutes_changed(self) -> None:
-        pass
-
-    @Signal
-    def hours_changed(self) -> None:
-        pass
-
-    @Signal
-    def start_stop_button_clicked(self) -> None:
-        pass
-
-    @Signal
-    def reset_button_clicked(self) -> None:
-        pass
-
-    state = Property(int, get_state, set_state, notify=state_changed)
-
-    millis = Property(int, get_millis, set_millis, notify=millis_changed)
-    seconds = Property(int, get_seconds, set_seconds, notify=seconds_changed)
-    minutes = Property(int, get_minutes, set_minutes, notify=minutes_changed)
-    hours = Property(int, get_hours, set_hours, notify=hours_changed)
+    def update_timers(self) -> None:
+        for timer in self.timers:
+            timer.update()

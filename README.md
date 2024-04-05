@@ -4,7 +4,7 @@ Simple stopwatch based on PySide6 with QML. The whole design is based on a svg v
 that is organized in multiple layers. These layers are extracted and saved in separate files.
 In QML these layers are stacked and animated to create the result below.
 
-[![Video](frontend/images/svg/stopwatch.svg)](doc/demo.mp4)
+[![Video](stopwatch_backend/frontend/images/svg/stopwatch.svg)](doc/demo.mp4)
 
 ## Setup environment
 
